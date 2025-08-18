@@ -1,0 +1,37 @@
+name: CI/CD Quarkus Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout do código
+      uses: actions/checkout@v3
+    
+    - name: Configurar JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Compilar e empacotar aplicação Quarkus
+      run: ./mvnw package -DskipTests
+    
+    - name: Build da imagem docker
+      run: |
+        docker build -t quarkus-app:latest .
+
+    - name: Deploy em ambiente de desenvolvimento
+      run: |
+        echo "Simulação de deploy do ambiente DEV"
+
+    - name: Deploy em ambiente de produção
+      if: github.ref == 'refs/heads/main'
+      run: |
+        echo  "Simulação de deploy do ambiente PROD"
