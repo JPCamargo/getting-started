@@ -94,14 +94,20 @@ jobs:
           location: us-central1
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
+      - name: Substituir variáveis nos manifestos
+        run: |
+          export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+          export COMMIT_HASH=${{ env.COMMIT_HASH }}
+          mkdir -p infra/dev/resolved
+          for file in infra/dev/*.yaml; do
+            envsubst < "$file" > "infra/dev/resolved/$(basename $file)"
+          done
 
       - name: Aplicar manifestos Kubernetes
-        run: kubectl apply -f infra/dev/
+        run: kubectl apply -f infra/dev/resolved/
 
       - name: Verificar status dos pods
         run: kubectl get pods
-
-
 
 
       # Etapa 10: Simulação de deploy no ambiente de desenvolvimento
