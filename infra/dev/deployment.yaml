@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: quarkus-app-dev
+  Namespace: dev
   labels:
     app: quarkus-app
 spec:
