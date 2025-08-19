@@ -1,44 +1,77 @@
+# Arquivo de workflow GitHub Actions para CI/CD de aplicação Quarkus
+# Este workflow executa testes, build da imagem Docker e simula deploy
+# Somente quando um pull request for mesclado na branch 'main'
+
 name: CI/CD Quarkus Pipeline
 
 on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main"]
+    types: [closed]  # Executa apenas quando o PR for fechado
+    branches: [main] # E a branch de destino for 'main'
 
 jobs:
   build:
+    if: github.event.pull_request.merged == true  # Garante que o PR foi realmente mesclado
     runs-on: ubuntu-latest
 
     steps:
-    - name: checkout do código
-      uses: actions/checkout@v3
-    
-    - name: Configurar JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-    
-    - name: Dar permissão de execução ao mvnw
-      run: chmod +x mvnw
-    
-    - name: Compilar e empacotar aplicação Quarkus
-      run: ./mvnw package -DskipTests
-    
-    - name: Obter hash do commit
-      id: vars
-      run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+      # Etapa 1: Checkout do código-fonte
+      - name: Checkout do código
+        uses: actions/checkout@v3
 
-    - name: Build da imagem docker
-      run: |
-        docker build -t quarkus-app:${{ env.COMMIT_HASH }} .
+      # Etapa 2: Configuração do Java 17 (necessário para Quarkus)
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-    - name: Deploy em ambiente de desenvolvimento
-      run: |
-        echo "Simulação de deploy do ambiente DEV"
+      # Etapa 3: Permissão de execução para o wrapper do Maven
+      - name: Permitir execução do mvnw
+        run: chmod +x mvnw
 
-    - name: Deploy em ambiente de produção
-      if: github.ref == 'refs/heads/main'
-      run: |
-        echo  "Simulação de deploy do ambiente PROD"
+      # Etapa 4: Executar testes automatizados (JUnit/RestAssured)
+      - name: Executar testes automatizados
+        run: ./mvnw test
+
+      # Etapa 5: Compilar e empacotar a aplicação (sem rodar testes novamente)
+      - name: Compilar e empacotar aplicação Quarkus
+        run: ./mvnw package -DskipTests
+
+      # Etapa 6: Obter o hash do commit para versionar a imagem Docker
+      - name: Obter hash do commit
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      # Etapa 7: Build da imagem Docker com tag baseada no hash do commit
+      - name: Build da imagem Docker
+        run: docker build -t quarkus-app:${{ env.COMMIT_HASH }} .
+
+      # Etapa 8: Login no Docker Hub (requer segredos DOCKER_USERNAME e DOCKER_PASSWORD)
+      - name: Login no Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Etapa 9: Push da imagem para o Docker Hub
+      - name: Push da imagem para o Docker Hub
+        run: |
+          docker tag quarkus-app:${{ env.COMMIT_HASH }} ${{ secrets.DOCKER_USERNAME }}/quarkus-app:${{ env.COMMIT_HASH }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/quarkus-app:${{ env.COMMIT_HASH }}
+
+      # Etapa 10: Simulação de deploy no ambiente de desenvolvimento
+      - name: Simular deploy no ambiente DEV
+        run: echo "Simulação de deploy no ambiente DEV"
+
+      # Etapa 11: Simulação de deploy no ambiente de produção
+      - name: Simular deploy no ambiente PROD
+        run: echo "Simulação de deploy no ambiente PROD"
+
+
+#- name: Configurar acesso ao cluster Minikube
+#  run: kubectl config use-context minikube
+
+#- name: Aplicar manifestos Kubernetes
+#  run: kubectl apply -f k8s/
+
+#- name: Verificar status dos pods
+#  run: kubectl get pods
