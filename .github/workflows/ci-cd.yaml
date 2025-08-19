@@ -76,6 +76,26 @@ jobs:
           docker tag quarkus-app:${{ env.COMMIT_HASH }} ${{ secrets.DOCKER_USERNAME }}/quarkus-app:${{ env.COMMIT_HASH }}
           docker push ${{ secrets.DOCKER_USERNAME }}/quarkus-app:${{ env.COMMIT_HASH }}
 
+      - name: Autenticar no GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Configurar acesso ao cluster GKE
+        run: |
+          gcloud container clusters get-credentials quarkus-cluster \
+            --zone southamerica-east1-a \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Aplicar manifestos Kubernetes
+        run: kubectl apply -f infra/dev/
+
+      - name: Verificar status dos pods
+        run: kubectl get pods
+
+
+
+
       # Etapa 10: Simulação de deploy no ambiente de desenvolvimento
       - name: Simular deploy no ambiente DEV
         run: echo "Simulação de deploy no ambiente DEV"
