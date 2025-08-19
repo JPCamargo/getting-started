@@ -26,9 +26,13 @@ jobs:
     - name: Compilar e empacotar aplicação Quarkus
       run: ./mvnw package -DskipTests
     
+    - name: Obter hash do commit
+      id: vars
+      run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
     - name: Build da imagem docker
       run: |
-        docker build -t quarkus-app:latest .
+        docker build -t quarkus-app:${{ env.COMMIT_HASH }} .
 
     - name: Deploy em ambiente de desenvolvimento
       run: |
