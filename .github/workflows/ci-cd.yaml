@@ -5,15 +5,13 @@
 name: CI/CD Quarkus Pipeline
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
-    types: [closed]  # Executa apenas quando o PR for fechado
+    types: [closed, opened]  # Executa apenas quando o PR for fechado
     branches: [main] # E a branch de destino for 'main'
 
 jobs:
-  build:
-    #if: github.event.pull_request.merged == true  # Garante que o PR foi realmente mesclado
+   test:
+    if: github.event.action == 'opened'  # Executar esse job quando o pull request for aberto
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +33,26 @@ jobs:
       # Etapa 4: Executar testes automatizados (JUnit/RestAssured)
       - name: Executar testes automatizados
         run: ./mvnw test
+  
+   build:
+    if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true  # Garante que o PR foi realmente mesclado
+    runs-on: ubuntu-latest
+
+    steps:
+      # Etapa 1: Checkout do código-fonte
+      - name: Checkout do código
+        uses: actions/checkout@v3
+
+      # Etapa 2: Configuração do Java 17 (necessário para Quarkus)
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Etapa 3: Permissão de execução para o wrapper do Maven
+      - name: Permitir execução do mvnw
+        run: chmod +x mvnw
 
       # Etapa 5: Compilar e empacotar a aplicação (sem rodar testes novamente)
       - name: Compilar e empacotar aplicação Quarkus
