@@ -81,11 +81,18 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
+
       - name: Configurar acesso ao cluster GKE
         run: |
           gcloud container clusters get-credentials quarkus-cluster \
             --zone southamerica-east1-a \
             --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Instalar gke-gcloud-auth-plugin
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+          echo "export USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
       - name: Aplicar manifestos Kubernetes
         run: kubectl apply -f infra/dev/
