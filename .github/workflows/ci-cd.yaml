@@ -89,6 +89,9 @@ jobs:
       COMMIT_HASH: ${{ needs.build.outputs.commit_hash }}
     
     steps:
+
+      - name: Checkout do código
+        uses: actions/checkout@v3
     
       - name: Autenticar no GCP
         uses: google-github-actions/auth@v1
