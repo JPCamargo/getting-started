@@ -38,7 +38,7 @@ jobs:
     if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true  # Garante que o PR foi realmente mesclado
     runs-on: ubuntu-latest
     outputs:
-      commit: ${{ steps.get-hash.outputs.commit }}
+      commit_hash: ${{ steps.get-hash.outputs.COMMIT_HASH }}
 
     steps:
       # Etapa 1: Checkout do código-fonte
@@ -120,7 +120,7 @@ jobs:
     needs: build
     environment: aprovação-deploy-prd
     env:
-      COMMIT_HASH: ${{ needs.set-commit-hash.outputs.commit }}
+      COMMIT_HASH: ${{ needs.build.outputs.commit_hash }}
     
     steps:
 
