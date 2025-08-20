@@ -38,7 +38,7 @@ jobs:
     if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true  # Garante que o PR foi realmente mesclado
     runs-on: ubuntu-latest
     outputs:
-      commit_hash: ${{ steps.get-hash.outputs.COMMIT_HASH }}
+      commit_hash: ${{ steps.get-hash.outputs.commit }}
 
     steps:
       # Etapa 1: Checkout do código-fonte
@@ -63,7 +63,9 @@ jobs:
       # Etapa 6: Obter o hash do commit para versionar a imagem Docker
       - name: Obter hash do commit
         id: get-hash
-        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: |
+          echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "commit=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       # Etapa 7: Build da imagem Docker com tag baseada no hash do commit
       - name: Build da imagem Docker
