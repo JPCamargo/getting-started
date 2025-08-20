@@ -106,13 +106,15 @@ jobs:
       - name: Aplicar manifestos Kubernetes
         run: kubectl apply -f infra/dev/resolved/
 
-      - name: Verificar status dos pods
-        run: kubectl get pods
-
-
-      # Etapa 10: Simulação de deploy no ambiente de desenvolvimento
-      - name: Simular deploy no ambiente DEV
-        run: echo "Simulação de deploy no ambiente DEV"
+      - name: Validar sucesso do Deployment
+        run: |
+          echo "Verificando rollout do Deployment..."
+          kubectl rollout status deployment/quarkus-app-dev --namespace=dev --timeout=300s
+      
+      - name: Aguardar aprovação para continuar
+        environment:
+          name: aprovação-deploy-prd
+        run: echo "Aguardando aprovação para continuar..."
 
       # Etapa 11: Simulação de deploy no ambiente de produção
       - name: Simular deploy no ambiente PROD
