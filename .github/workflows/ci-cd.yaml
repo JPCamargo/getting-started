@@ -80,7 +80,16 @@ jobs:
         run: |
           docker tag quarkus-app:${{ env.COMMIT_HASH }} ${{ secrets.DOCKER_USERNAME }}/quarkus-app:${{ env.COMMIT_HASH }}
           docker push ${{ secrets.DOCKER_USERNAME }}/quarkus-app:${{ env.COMMIT_HASH }}
-
+   
+   deploy-dev:
+    if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true  # Garante que o PR foi realmente mesclado
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      COMMIT_HASH: ${{ needs.build.outputs.commit_hash }}
+    
+    steps:
+    
       - name: Autenticar no GCP
         uses: google-github-actions/auth@v1
         with:
@@ -119,7 +128,7 @@ jobs:
    deploy-prd:
     if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true  # Garante que o PR foi realmente mesclado
     runs-on: ubuntu-latest
-    needs: build
+    needs: deploy-dev
     environment: aprovação-deploy-prd
     env:
       COMMIT_HASH: ${{ needs.build.outputs.commit_hash }}
