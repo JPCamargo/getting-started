@@ -106,24 +106,51 @@ jobs:
       - name: Aplicar manifestos Kubernetes
         run: kubectl apply -f infra/dev/resolved/
 
-      - name: Verificar status dos pods
-        run: kubectl get pods
+      - name: Validar sucesso do Deployment
+        run: |
+          echo "Verificando rollout do Deployment..."
+          kubectl rollout status deployment/quarkus-app-dev --namespace=dev --timeout=300s
 
+   deploy-prd:
+    if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true  # Garante que o PR foi realmente mesclado
+    runs-on: ubuntu-latest
+    needs: build
+    environment: aprovação-deploy-prd
+    steps:
 
-      # Etapa 10: Simulação de deploy no ambiente de desenvolvimento
-      - name: Simular deploy no ambiente DEV
-        run: echo "Simulação de deploy no ambiente DEV"
+      - name: Checkout do código
+        uses: actions/checkout@v3
 
-      # Etapa 11: Simulação de deploy no ambiente de produção
-      - name: Simular deploy no ambiente PROD
-        run: echo "Simulação de deploy no ambiente PROD"
+      - name: Autenticar no GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
+      - name: Instalar gcloud com plugin GKE
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          install_components: gke-gcloud-auth-plugin
 
-#- name: Configurar acesso ao cluster Minikube
-#  run: kubectl config use-context minikube
+      - name: Configurar acesso ao cluster GKE
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          cluster_name: quarkus-app-cluster
+          location: us-central1
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-#- name: Aplicar manifestos Kubernetes
-#  run: kubectl apply -f k8s/
+      - name: Substituir variáveis nos manifestos
+        run: |
+          export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+          export COMMIT_HASH=${{ env.COMMIT_HASH }}
+          mkdir -p infra/prod/resolved
+          for file in infra/prod/*.yaml; do
+            envsubst < "$file" > "infra/prod/resolved/$(basename $file)"
+          done
 
-#- name: Verificar status dos pods
-#  run: kubectl get pods
+      - name: Aplicar manifestos Kubernetes
+        run: kubectl apply -f infra/prod/resolved/
+
+      - name: Validar sucesso do Deployment
+        run: |
+          echo "Verificando rollout do Deployment..."
+          kubectl rollout status deployment/quarkus-app-dev --namespace=dev --timeout=300s
