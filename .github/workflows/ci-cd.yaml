@@ -110,9 +110,16 @@ jobs:
         run: kubectl apply -f infra/dev/resolved/
 
       - name: Validar sucesso do Deployment
+        id: validar_deploy
         run: |
           echo "Verificando rollout do Deployment..."
           kubectl rollout status deployment/quarkus-app-dev --namespace=dev --timeout=300s
+      
+      - name: Rollback do Deployment em caso de falha
+        if: steps.validar_deploy.outcome == 'failure'
+        run: |
+          echo "Falha no rollout. Iniciando rollback..."
+          kubectl rollout undo deployment/quarkus-app-dev --namespace=dev
 
    deploy-prd:
     if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true
@@ -159,5 +166,11 @@ jobs:
         run: |
           echo "Verificando rollout do Deployment..."
           kubectl rollout status deployment/quarkus-app-prod --namespace=prod --timeout=300s
+      
+      - name: Rollback do Deployment em caso de falha
+        if: steps.validar_deploy.outcome == 'failure'
+        run: |
+          echo "Falha no rollout. Iniciando rollback..."
+          kubectl rollout undo deployment/quarkus-app-prod --namespace=prod
 
 # Fim do Pipeline CI/CD Quarkus App
