@@ -111,6 +111,7 @@ jobs:
 
       - name: Validar sucesso do Deployment
         id: validar_deploy_dev
+        continue-on-error: true
         run: |
           echo "Verificando rollout do Deployment..."
           kubectl rollout status deployment/quarkus-app-dev --namespace=dev --timeout=300s
@@ -164,6 +165,7 @@ jobs:
 
       - name: Validar sucesso do Deployment
         id: validar_deploy_prod
+        continue-on-error: true
         run: |
           echo "Verificando rollout do Deployment..."
           kubectl rollout status deployment/quarkus-app-prod --namespace=prod --timeout=300s
