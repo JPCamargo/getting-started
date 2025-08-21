@@ -114,13 +114,15 @@ jobs:
         continue-on-error: true
         run: |
           echo "Verificando rollout do Deployment..."
-          kubectl rollout status deployment/quarkus-app-dev --namespace=dev --timeout=300s
+          kubectl rollout status deployment/quarkus-app-dev --namespace=dev --timeout=30s
       
       - name: Rollback do Deployment em caso de falha
         if: steps.validar_deploy_dev.outcome == 'failure'
         run: |
           echo "Falha no rollout. Iniciando rollback..."
           kubectl rollout undo deployment/quarkus-app-dev --namespace=dev
+          echo "Rollback executado. Marcando job como falho."
+          exit 1
 
    deploy-prd:
     if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true
