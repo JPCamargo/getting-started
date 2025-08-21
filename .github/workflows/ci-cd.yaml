@@ -110,13 +110,13 @@ jobs:
         run: kubectl apply -f infra/dev/resolved/
 
       - name: Validar sucesso do Deployment
-        id: validar_deploy
+        id: validar_deploy_dev
         run: |
           echo "Verificando rollout do Deployment..."
           kubectl rollout status deployment/quarkus-app-dev --namespace=dev --timeout=300s
       
       - name: Rollback do Deployment em caso de falha
-        if: steps.validar_deploy.outcome == 'failure'
+        if: steps.validar_deploy_dev.outcome == 'failure'
         run: |
           echo "Falha no rollout. Iniciando rollback..."
           kubectl rollout undo deployment/quarkus-app-dev --namespace=dev
@@ -163,12 +163,13 @@ jobs:
         run: kubectl apply -f infra/prod/resolved/
 
       - name: Validar sucesso do Deployment
+        id: validar_deploy_prod
         run: |
           echo "Verificando rollout do Deployment..."
           kubectl rollout status deployment/quarkus-app-prod --namespace=prod --timeout=300s
       
       - name: Rollback do Deployment em caso de falha
-        if: steps.validar_deploy.outcome == 'failure'
+        if: steps.validar_deploy_prod.outcome == 'failure'
         run: |
           echo "Falha no rollout. Iniciando rollback..."
           kubectl rollout undo deployment/quarkus-app-prod --namespace=prod
