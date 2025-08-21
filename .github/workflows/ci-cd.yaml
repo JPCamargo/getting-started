@@ -177,5 +177,7 @@ jobs:
         run: |
           echo "Falha no rollout. Iniciando rollback..."
           kubectl rollout undo deployment/quarkus-app-prod --namespace=prod
+          echo "Rollback executado. Marcando job como falho."
+          exit 1
 
 # Fim do Pipeline CI/CD Quarkus App
