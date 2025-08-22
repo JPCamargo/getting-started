@@ -62,7 +62,7 @@ jobs:
         run: docker build -t quarkus-app:${{ env.COMMIT_HASH }} .
 
       - name: Scan de vulnerabilidades com Trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.32.0
         with:
           image-ref: quarkus-app:${{ env.COMMIT_HASH }} # Nome da imagem contruída 
           format: table # Exibe resultados em formato legível
