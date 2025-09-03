@@ -30,6 +30,9 @@ jobs:
       - name: Executar testes automatizados
         run: ./mvnw test
       
+      - name: Compilar e empacotar aplicação Quarkus
+        run: ./mvnw package -DskipTests
+        
       - name: SonarQube
         uses: SonarSource/sonarqube-scan-action@master
         env:
