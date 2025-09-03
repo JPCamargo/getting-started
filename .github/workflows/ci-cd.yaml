@@ -36,9 +36,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          projectBaseDir: ${{ github.workspace }}/quarkus-getting-started
           args: >
-            -Dsonar.sources=.
             -Dsonar.projectKey=quarkus_hello
             -Dsonar.verbose=true
 
