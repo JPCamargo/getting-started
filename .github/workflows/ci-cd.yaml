@@ -29,6 +29,22 @@ jobs:
 
       - name: Executar testes automatizados
         run: ./mvnw test
+      
+      - name: SonarQube
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          projectBaseDir: app/src
+          args: >
+            -Dsonar.organization=my-organization # For SonarQube Cloud only
+            -Dsonar.projectKey=my-projectkey
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.sources=lib/
+            -Dsonar.tests=tests/
+            -Dsonar.test.exclusions=tests/**
+            -Dsonar.verbose=true
 
    build:
     if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true  # Garante o merge para branch ‘main’
