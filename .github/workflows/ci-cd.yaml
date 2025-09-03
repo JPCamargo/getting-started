@@ -36,14 +36,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
-          projectBaseDir: app/src
+          projectBaseDir: ${{ github.workspace }}/quarkus-getting-started
           args: >
-            -Dsonar.organization=my-organization # For SonarQube Cloud only
-            -Dsonar.projectKey=my-projectkey
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-            -Dsonar.sources=lib/
-            -Dsonar.tests=tests/
-            -Dsonar.test.exclusions=tests/**
+            -Dsonar.sources=.
+            -Dsonar.projectKey=quarkus_hello
             -Dsonar.verbose=true
 
    build:
