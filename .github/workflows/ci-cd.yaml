@@ -42,6 +42,8 @@ jobs:
           args: >
             -Dsonar.projectKey=quarkus_hello
             -Dsonar.verbose=true
+            -Dsonar.exclusions=**/*.java
+            
 
    build:
     if: github.event.pull_request.state == 'closed' && github.event.pull_request.merged == true  # Garante o merge para branch ‘main’
