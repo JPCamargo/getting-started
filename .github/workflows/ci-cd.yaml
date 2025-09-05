@@ -88,7 +88,7 @@ jobs:
           ignore-unfixed: true # Ignora vulnerabilidade que não tem correção
       
       - name: Login no Nexus
-        run: echo "${{ secrets.NEXUS_USER_PASSWORD }}" | docker login -u ${{ NEXUS_USER }} ${{ secrets.NEXUS_REGISTRY }} --password-stdin
+        run: echo "${{ secrets.NEXUS_USER_PASSWORD }}" | docker login -u ${{ secrets.NEXUS_USER }} ${{ secrets.NEXUS_REGISTRY }} --password-stdin
       
       - name: Push da imagem para o Nexus
         run: |
